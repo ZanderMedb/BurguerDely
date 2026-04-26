@@ -19,6 +19,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
 import OrderTracking from "./pages/OrderTracking";
+import EntregadorGPS from "./pages/EntregadorGPS";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
                   <Route path="/recuperar-senha" element={<ForgotPassword />} />
                   <Route path="/perfil" element={<Profile />} />
                   <Route path="/rastreamento/:id" element={<OrderTracking />} />
+                  <Route path="/entregador/:id" element={<EntregadorGPS />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

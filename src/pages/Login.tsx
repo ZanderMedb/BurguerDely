@@ -42,7 +42,7 @@ export default function Login() {
         <div className="text-center mb-6">
           <LogIn className="h-10 w-10 text-primary mx-auto mb-2" />
           <h1 className="font-heading font-bold text-2xl text-card-foreground">Entrar</h1>
-          <p className="text-sm text-muted-foreground mt-1">Acesse sua conta BurgerDelivery</p>
+          <p className="text-sm text-muted-foreground mt-1">Acesse sua conta Burguer Dely</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -23,7 +23,7 @@ export default function Header() {
         <Link to="/" className="flex items-center gap-2">
           <span className="text-2xl font-heading font-black text-primary">🍔</span>
           <span className="text-xl font-heading font-bold text-primary-foreground">
-            Burger<span className="text-primary">Delivery</span>
+            Burguer<span className="text-primary">Dely</span>
           </span>
         </Link>
 

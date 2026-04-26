@@ -2,8 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Clock, Flame, Star, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
-import heroBurger from "@/assets/hero-burger.jpg";
+import { products, HERO_IMAGE } from "@/data/products";
 
 const popular = products.filter((p) => p.bestseller);
 
@@ -13,7 +12,7 @@ export default function Index() {
       {/* Hero */}
       <section className="relative min-h-[80vh] flex items-center overflow-hidden">
         <img
-          src={heroBurger}
+          src={HERO_IMAGE}
           alt="Hambúrguer artesanal com queijo derretido"
           width={1920}
           height={1080}
