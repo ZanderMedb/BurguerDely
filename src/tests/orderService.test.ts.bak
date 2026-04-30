@@ -29,9 +29,8 @@ const store: Record<string, string> = {};
   clear: () => { Object.keys(store).forEach((k) => delete store[k]); },
 };
 
-let uuidCounter = 0;
 (globalThis as any).crypto = {
-  randomUUID: () => `${String(++uuidCounter).padStart(8, "0")}-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+  randomUUID: () => "aaaa-bbbb-cccc-dddd-eeee",
 };
 
 const mockItem: CartItem = {
@@ -51,10 +50,7 @@ const orderData = {
   deliveryLng: -48.06,
 };
 
-beforeEach(() => {
-  Object.keys(store).forEach((k) => delete store[k]);
-  uuidCounter = 0;
-});
+beforeEach(() => { Object.keys(store).forEach((k) => delete store[k]); });
 
 // ── CREATE ORDER ──────────────────────────────────────────────
 describe("createOrder()", () => {
