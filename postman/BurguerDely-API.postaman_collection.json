@@ -1,0 +1,540 @@
+{
+  "info": {
+    "name": "BurguerDely API Tests",
+    "_postman_id": "burgerdely-api-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3001" },
+    { "key": "token", "value": "" },
+    { "key": "user_id", "value": "" },
+    { "key": "order_id", "value": "" },
+    { "key": "reset_code", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "TC-API-001 — Registrar novo usuário",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Teste User\",\n  \"email\": \"teste@burgerdely.com\",\n  \"password\": \"Senha@123\",\n  \"address\": \"QNG 04 Casa 06\",\n  \"city\": \"Taguatinga\",\n  \"state\": \"DF\",\n  \"zipCode\": \"72130040\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Retorna success true', () => pm.expect(pm.response.json().success).to.be.true);",
+                  "pm.test('Retorna user com id', () => pm.expect(pm.response.json().user).to.have.property('id'));",
+                  "pm.test('Retorna token', () => pm.expect(pm.response.json().token).to.be.a('string'));",
+                  "pm.test('Não retorna senha', () => pm.expect(pm.response.json().user).to.not.have.property('password'));",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('token', data.token);",
+                  "pm.collectionVariables.set('user_id', data.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-002 — Registrar e-mail duplicado (409)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Duplicado\",\n  \"email\": \"teste@burgerdely.com\",\n  \"password\": \"Senha@123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 Conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('Retorna erro de e-mail duplicado', () => {",
+                  "  pm.expect(pm.response.json().error).to.include('cadastrado');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-003 — Registro sem campos obrigatórios (400)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Retorna success false', () => pm.expect(pm.response.json().success).to.be.false);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-004 — Login com credenciais válidas",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teste@burgerdely.com\",\n  \"password\": \"Senha@123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna success true', () => pm.expect(pm.response.json().success).to.be.true);",
+                  "pm.test('Retorna token', () => pm.expect(pm.response.json().token).to.be.a('string'));",
+                  "pm.test('Retorna user com email', () => {",
+                  "  pm.expect(pm.response.json().user.email).to.eql('teste@burgerdely.com');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('token', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-005 — Login com senha inválida (401)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teste@burgerdely.com\",\n  \"password\": \"senhaErrada\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 Unauthorized', () => pm.response.to.have.status(401));",
+                  "pm.test('Retorna success false', () => pm.expect(pm.response.json().success).to.be.false);",
+                  "pm.test('Mensagem de erro', () => {",
+                  "  pm.expect(pm.response.json().error).to.include('incorretos');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-006 — Solicitar reset de senha",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/forgot-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teste@burgerdely.com\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna success true', () => pm.expect(pm.response.json().success).to.be.true);",
+                  "pm.test('Retorna código', () => pm.expect(pm.response.json().code).to.be.a('string'));",
+                  "",
+                  "pm.collectionVariables.set('reset_code', pm.response.json().code);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-007 — Redefinir senha com código válido",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/reset-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teste@burgerdely.com\",\n  \"token\": \"{{reset_code}}\",\n  \"newPassword\": \"NovaSenha@456\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna success true', () => pm.expect(pm.response.json().success).to.be.true);",
+                  "pm.test('Mensagem de sucesso', () => {",
+                  "  pm.expect(pm.response.json().message).to.include('sucesso');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-008 — Login com nova senha",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teste@burgerdely.com\",\n  \"password\": \"NovaSenha@456\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Login com nova senha funciona', () => {",
+                  "  pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-009 — Atualizar perfil",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/auth/profile/{{user_id}}",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Teste Atualizado\",\n  \"city\": \"Brasília\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Nome atualizado', () => {",
+                  "  pm.expect(pm.response.json().user.name).to.eql('Teste Atualizado');",
+                  "});",
+                  "pm.test('Cidade atualizada', () => {",
+                  "  pm.expect(pm.response.json().user.city).to.eql('Brasília');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-010 — Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/logout",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Logout realizado', () => {",
+                  "  pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pedidos",
+      "item": [
+        {
+          "name": "TC-API-011 — Criar pedido",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/orders",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"items\": [\n    { \"id\": \"1\", \"name\": \"Burger Clássico\", \"price\": 28.90, \"quantity\": 2, \"image\": \"\" }\n  ],\n  \"total\": 57.80,\n  \"address\": \"QNG 04 Casa 06, Taguatinga, DF\",\n  \"paymentMethod\": \"cartao\",\n  \"deliveryLat\": -15.82,\n  \"deliveryLng\": -48.05\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Retorna id do pedido', () => pm.expect(pm.response.json().id).to.be.a('string'));",
+                  "pm.test('Status inicial é confirmed', () => {",
+                  "  pm.expect(pm.response.json().status).to.eql('confirmed');",
+                  "});",
+                  "pm.test('Total correto', () => pm.expect(pm.response.json().total).to.eql(57.80));",
+                  "pm.test('Tem tempo estimado', () => {",
+                  "  pm.expect(pm.response.json().estimatedMinutes).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('order_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-012 — Criar pedido sem campos obrigatórios (400)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Retorna mensagem de erro', () => pm.expect(pm.response.json().error).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-013 — Buscar pedido por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/orders/{{order_id}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('ID confere', () => {",
+                  "  pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('order_id'));",
+                  "});",
+                  "pm.test('Tem items', () => pm.expect(pm.response.json().items).to.be.an('array'));",
+                  "pm.test('Tem endereço', () => pm.expect(pm.response.json().address).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-014 — Buscar pedido inexistente (404)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/orders/XXXXXXXX",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 Not Found', () => pm.response.to.have.status(404));",
+                  "pm.test('Mensagem de erro', () => {",
+                  "  pm.expect(pm.response.json().error).to.include('não encontrado');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-015 — Listar pedidos do usuário",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/orders/user/{{user_id}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Tem pelo menos 1 pedido', () => {",
+                  "  pm.expect(pm.response.json().length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-016 — Atualizar status para preparing",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/orders/{{order_id}}/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"preparing\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Status atualizado para preparing', () => {",
+                  "  pm.expect(pm.response.json().status).to.eql('preparing');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-017 — Atualizar status para on_the_way",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/orders/{{order_id}}/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"on_the_way\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Status atualizado para on_the_way', () => {",
+                  "  pm.expect(pm.response.json().status).to.eql('on_the_way');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-018 — Atualizar status para delivered",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/orders/{{order_id}}/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"delivered\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Status atualizado para delivered', () => {",
+                  "  pm.expect(pm.response.json().status).to.eql('delivered');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-019 — Status inválido (400)",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/orders/{{order_id}}/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"cancelado\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Mensagem de status inválido', () => {",
+                  "  pm.expect(pm.response.json().error).to.include('inválido');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-API-020 — Confirmar pedido entregue via GET",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/orders/{{order_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Pedido está como delivered', () => {",
+                  "  pm.expect(pm.response.json().status).to.eql('delivered');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
