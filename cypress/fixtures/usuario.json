@@ -1,0 +1,9 @@
+{
+  "nome": "Usuário Cypress",
+  "email": "cypress@burguer.com",
+  "senha": "cypress123",
+  "endereco": "QNG 04 Casa 06",
+  "cidade": "Brasília",
+  "estado": "DF",
+  "cep": "72020-000"
+}
